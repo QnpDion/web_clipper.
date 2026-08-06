@@ -1,4 +1,3 @@
-cat > android/build.gradle.kts << 'EOF'
 import com.android.build.gradle.BaseExtension
 
 allprojects {
@@ -33,4 +32,3 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
-EOF
