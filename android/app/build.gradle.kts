@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.webclipper.web_clipper"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk =  compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
