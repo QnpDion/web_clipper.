@@ -7,6 +7,14 @@ allprojects {
     }
 }
 
+subprojects {
+    afterEvaluate {
+        extensions.findByType(BaseExtension::class.java)?.let {
+            it.compileSdkVersion(36)
+        }
+    }
+}
+
 val newBuildDir: Directory =
     rootProject.layout.buildDirectory
         .dir("../../build")
@@ -16,27 +24,12 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
+}
 
-subprojects {
-    afterEvaluate {
-        extensions.findByType(com.android.build.gradle.BaseExtension::class.java)?.let {
-            it.compileSdkVersion(36}
 subprojects {
     project.evaluationDependsOn(":app")
 }
 
-subprojects {
-    afterEvaluate {
-        extensions.findByType(BaseExtension::class.java)?.let {
-            it.compileSdkVersion(36)
-        }
-    }
-}
-
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
-}
-)
-        }
-    }
 }
