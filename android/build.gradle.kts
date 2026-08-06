@@ -1,3 +1,6 @@
+cat > android/build.gradle.kts << 'EOF'
+import com.android.build.gradle.BaseExtension
+
 allprojects {
     repositories {
         google()
@@ -19,6 +22,15 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+subprojects {
+    afterEvaluate {
+        extensions.findByType(BaseExtension::class.java)?.let {
+            it.compileSdkVersion(36)
+        }
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+EOF
