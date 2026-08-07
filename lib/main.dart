@@ -102,6 +102,7 @@ class _HomeShellState extends State<HomeShell> {
   int _tabIndex = 0;
   bool _collectMode = false;
   late final WebViewController _webController;
+  bool _hasRetried = false;
   final List<ClippedItem> _items = [];
   final TextEditingController _urlController =
       TextEditingController(text: 'https://uk.wikipedia.org');
@@ -120,6 +121,14 @@ class _HomeShellState extends State<HomeShell> {
           onPageFinished: (_) async {
             await _webController.runJavaScript(_clipperJs);
             await _setCollectModeJs(_collectMode);
+          },
+          onWebResourceError: (error) {
+            if (error.description.contains('ERR_CACHE_MISS') && !_hasRetried) {
+              _hasRetried = true;
+              Future.delayed(const Duration(milliseconds: 400), () {
+                _webController.reload();
+              });
+            }
           },
         ),
       )
@@ -229,35 +238,39 @@ class _HomeShellState extends State<HomeShell> {
         children: [
           Column(
             children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _urlController,
-                    keyboardType: TextInputType.url,
-                    textInputAction: TextInputAction.go,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                      hintText: 'Введи адресу сайту',
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _urlController,
+                        keyboardType: TextInputType.url,
+                        textInputAction: TextInputAction.go,
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          border: OutlineInputBorder(),
+                          hintText: 'Введи адресу сайту',
+                        ),
+                        onSubmitted: (value) {
+                          var url = value.trim();
+                          if (!url.startsWith('http')) url = 'https://$url';
+                          _hasRetried = false;
+                          _webController.loadRequest(Uri.parse(url));
+                        },
+                      ),
                     ),
-                    onSubmitted: (value) {
-                      var url = value.trim();
-                      if (!url.startsWith('http')) url = 'https://$url';
-                      _webController.loadRequest(Uri.parse(url));
-                    },
-                  ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () {
+                        _hasRetried = false;
+                        _webController.reload();
+                      },
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () => _webController.reload(),
-                ),
-              ],
-            ),
-          ),
+              ),
               Expanded(child: WebViewWidget(controller: _webController)),
             ],
           ),
@@ -332,4 +345,3 @@ class _HomeShellState extends State<HomeShell> {
     );
   }
 }
-
